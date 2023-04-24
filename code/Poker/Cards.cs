@@ -28,7 +28,21 @@ namespace Poker {
         K
     };
 
-    public class Card {
+    public enum HandRank
+    {
+        HighCard = 0,
+        Pair,
+        TwoPair,
+        ThreeOfAKind,
+        Straight,
+        Flush,
+        FullHouse,
+        FourOfAKind,
+        StraightFlush,
+        RoyalFlush
+    };
+
+    public class Card : IComparable<Card> {
 
         private Suit suit;
         private Value value;
@@ -37,6 +51,26 @@ namespace Poker {
         {
             this.value = value;
             this.suit = suit;
+        }
+
+        public int CompareTo(Card other)
+        {
+            if (other == null) { 
+                return 1; 
+            }
+
+            if (this.value > other.value)
+            {
+                return 1; 
+            }
+            else if (this.value < other.value)
+            {
+                return -1; 
+            }
+            else
+            {
+                return 0; 
+            }
         }
 
         public Suit getSuit() { 
@@ -49,7 +83,7 @@ namespace Poker {
 
         public override string ToString()
         {
-            return "Value: " + value + " Suit: " + suit;
+            return value + " of " + suit;
         }
     }
 
@@ -113,6 +147,187 @@ namespace Poker {
 
                 SwapCard(i, num);
             }
+        }
+    }
+
+    public class PokerRank {
+        private List<Card> cards;
+        public HandRank rank;
+
+        public PokerRank(List<Card> cards)
+        {
+            this.cards = cards;
+            this.rank = HandRank.HighCard;
+        }
+
+        public void Evaluate()
+        {
+            cards.Sort();
+            if (IsRoyalFlush())
+            {
+                rank = HandRank.RoyalFlush;
+            }
+            else if (IsStraightFlush())
+            {
+                rank = HandRank.StraightFlush;
+            }
+            else if (IsFourOfAKind())
+            {
+                rank = HandRank.FourOfAKind;
+            }
+            else if (IsFullHouse())
+            {
+                rank = HandRank.FullHouse;
+            }
+            else if (IsFlush())
+            {
+                rank = HandRank.Flush;
+            }
+            else if (IsStraight())
+            {
+                rank = HandRank.Straight;
+            }
+            else if (IsThreeOfAKind())
+            {
+                rank = HandRank.ThreeOfAKind;
+            }
+            else if (IsTwoPair())
+            {
+                rank = HandRank.TwoPair;
+            }
+            else if (IsPair())
+            {
+                rank = HandRank.Pair;
+            }
+        }
+
+        private bool IsRoyalFlush()
+        {
+            if (IsStraightFlush())
+            {
+                if (cards[0].getValue() == Value.A && cards[4].getValue() == Value.K)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        private bool IsFourOfAKind()
+        {
+            if (cards[0].getValue() == cards[1].getValue() && cards[0].getValue() == cards[2].getValue() && cards[0].getValue() == cards[3].getValue())
+            {
+                return true;
+            }
+            else if (cards[1].getValue() == cards[2].getValue() && cards[1].getValue() == cards[3].getValue() && cards[1].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsFullHouse()
+        {
+            if (cards[0].getValue() == cards[1].getValue() && cards[0].getValue() == cards[2].getValue() && cards[3].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            else if (cards[0].getValue() == cards[1].getValue() && cards[2].getValue() == cards[3].getValue() && cards[2].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsFlush()
+        {
+            if (cards[0].getSuit() == cards[1].getSuit() && cards[0].getSuit() == cards[2].getSuit() && cards[0].getSuit() == cards[3].getSuit() && cards[0].getSuit() == cards[4].getSuit())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsStraight() {
+            cards.Sort();
+            if (cards[0].getValue() == cards[1].getValue() - 1 && cards[0].getValue() == cards[2].getValue() - 2 && cards[0].getValue() == cards[3].getValue() - 3 && cards[0].getValue() == cards[4].getValue() - 4)
+            {
+                return true;
+            }
+            if (cards[0].getValue() == Value.A && cards[4].getValue() == Value.Five &&
+                cards[4].getValue() == Value.Four && cards[3].getValue() == Value.Three &&
+                cards[2].getValue() == Value.Two)
+            {
+                return true;
+            }
+            if (cards[0].getValue() == Value.A && cards[1].getValue() == Value.Ten &&
+                cards[2].getValue() == Value.J && cards[3].getValue() == Value.Q &&
+                cards[4].getValue() == Value.K)
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsThreeOfAKind()
+        {
+            if (cards[0].getValue() == cards[1].getValue() && cards[0].getValue() == cards[2].getValue())
+            {
+                return true;
+            }
+            else if (cards[1].getValue() == cards[2].getValue() && cards[1].getValue() == cards[3].getValue())
+            {
+                return true;
+            }
+            else if (cards[2].getValue() == cards[3].getValue() && cards[2].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsTwoPair()
+        {
+            if (cards[0].getValue() == cards[1].getValue() && cards[2].getValue() == cards[3].getValue())
+            {
+                return true;
+            }
+            else if (cards[0].getValue() == cards[1].getValue() && cards[3].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            else if (cards[1].getValue() == cards[2].getValue() && cards[3].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsPair()
+        {
+            cards.Sort();
+            if (cards[0].getValue() == cards[1].getValue())
+            {
+                return true;
+            }
+            else if (cards[1].getValue() == cards[2].getValue())
+            {
+                return true;
+            }
+            else if (cards[2].getValue() == cards[3].getValue())
+            {
+                return true;
+            }
+            else if (cards[3].getValue() == cards[4].getValue())
+            {
+                return true;
+            }
+            return false;
+        }
+        private bool IsStraightFlush()
+        {
+            if (IsStraight() && IsFlush())
+            {
+                return true;
+            }
+            return false;
+        }
+        public String getRank()
+        {
+            return rank.ToString();
         }
     }
 }
